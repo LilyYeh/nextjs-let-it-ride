@@ -1,209 +1,350 @@
-import Head from 'next/head'
+import Head from 'next/head';
+import styles from './index.module.scss';
+import { useEffect, useState } from 'react';
+import io from "socket.io-client";
+let socket;
 
 export default function Home() {
-  return (
-    <div className="container">
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+	const [ socketId, setSocketId ] = useState('');
+	const [ myId, setMyId ] = useState(0);
+	const [ players, setPlayers ] = useState([]);
+	const [ playersMoney, setPlayersMoney ] = useState([]);
+	const [ currentPlayer, setCurrentPlayer ] = useState(0);
+	const [ isMyTurn, setMyTurn ] = useState(false);
 
-      <main>
-        <h1 className="title">
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+	//myCards[0]、myCards[1] 龍柱
+	const defaultMyCards = [{"number":0,"type":"","imgName":"back.jpg"},{"number":0,"type":"","imgName":"back.jpg"}]
+	const [ myCards, setMyCard ] = useState(defaultMyCards);
+	const [ my3edCards, set3edCard ] = useState({});
 
-        <p className="description">
-          Get started by editing <code>pages/index.js</code>
-        </p>
+	const baseMoney = 10;
+	const baseMyMoney = 30;
+	const [ inputBets, setInputBets ] = useState(0);
+	const [ bets, setBets ] = useState(0);
+	const [ myMoney, setMyMoney ] = useState(baseMyMoney);
+	const [ totalMoney, setTotalMoney ] = useState(0);
 
-        <div className="grid">
-          <a href="https://nextjs.org/docs" className="card">
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
+	const [ ranking, setRanking ] = useState([]);
 
-          <a href="https://nextjs.org/learn" className="card">
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
+	async function dealCards(){
+		const apiUrlEndpoint = `/api/dealCards`;
+		const getData = {
+			method: "POST",
+			header: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				socketId: socketId
+			})
+		}
+		const response = await fetch(apiUrlEndpoint, getData);
+		const res = await response.json();
+		setMyCard(res.data);
+		set3edCard({});
+	}
 
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className="card"
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
+	async function getCard(){
+		const apiUrlEndpoint = `/api/getCard`;
+		const getData = {
+			method: "POST",
+			header: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				socketId: socketId,
+				myCards: myCards,
+				bets: bets,
+				baseMyMoney: baseMyMoney,
+				baseMoney: baseMoney
+			})
+		}
+		const response = await fetch(apiUrlEndpoint, getData);
+		const res = await response.json();
+		set3edCard(res.my3edCards);
+		setPlayers(res.players);
+		socket.emit('update-players',res.players);
+	}
 
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="card"
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
+	async function nextPlayer(){
+		const apiUrlEndpoint = `/api/setNextPlayer`;
+		const getData = {
+			method: "POST",
+			header: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				socketId: socketId
+			})
+		}
+		const response = await fetch(apiUrlEndpoint, getData);
+		const res = await response.json();
+		socket.emit('set-next-player', res);
+		setCurrentPlayer(res);
+		setMyCard(defaultMyCards);
+		set3edCard({});
+		setBets(0);
+		setInputBets(0)
+	}
 
-      <footer>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel" className="logo" />
-        </a>
-      </footer>
+	async function playerLogin(){
+		const apiUrlEndpoint = `/api/playerLogin`;
+		const getData = {
+			method: "POST",
+			header: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				socketId: socketId,
+				baseMoney: baseMoney,
+				baseMyMoney: baseMyMoney
+			})
+		}
+		const response = await fetch(apiUrlEndpoint, getData);
+		const res = await response.json();
+		setPlayers(res);
+		socket.emit('update-players',res);
+	}
 
-      <style jsx>{`
-        .container {
-          min-height: 100vh;
-          padding: 0 0.5rem;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-        }
+	function onChangeInputBets(e) {
+		setInputBets(e.target.value);
+		setBets(e.target.value);
+	}
 
-        main {
-          padding: 5rem 0;
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-        }
+	async function socketInitializer(){
+		await fetch('/api/socket');
+		socket = io();
 
-        footer {
-          width: 100%;
-          height: 100px;
-          border-top: 1px solid #eaeaea;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
+		socket.on('connect', () => {
+			setSocketId(socket.id);
+		});
 
-        footer img {
-          margin-left: 0.5rem;
-        }
+		socket.on('update-players', playersData => {
+			setPlayers(playersData);
+		});
 
-        footer a {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
+		socket.on('set-next-player', nextPlayer => {
+			setCurrentPlayer(nextPlayer);
+		});
 
-        a {
-          color: inherit;
-          text-decoration: none;
-        }
+		socket.on('game-over', rankingData => {
+			setRanking(rankingData);
+		});
 
-        .title a {
-          color: #0070f3;
-          text-decoration: none;
-        }
+		socket.on('new-game', playersData => {
+			setPlayers(playersData);
+			document.getElementById("game").style.display = "block";
+			document.getElementById(styles['gameOver']).style.display = "none";
+		});
+	}
 
-        .title a:hover,
-        .title a:focus,
-        .title a:active {
-          text-decoration: underline;
-        }
+	async function gameOver() {
+		const apiUrlEndpoint = `/api/gameOver`;
+		const getData = {
+			method: "POST",
+			header: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				totalMoney: totalMoney
+			})
+		}
+		const response = await fetch(apiUrlEndpoint, getData);
+		const res = await response.json();
+		setRanking(res);
+		socket.emit('game-over',res);
+	}
 
-        .title {
-          margin: 0;
-          line-height: 1.15;
-          font-size: 4rem;
-        }
+	async function newGame() {
+		const apiUrlEndpoint = `/api/newGame`;
+		const getData = {
+			method: "POST",
+			header: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				baseMoney: baseMoney,
+				baseMyMoney: baseMyMoney
+			})
+		}
+		const response = await fetch(apiUrlEndpoint, getData);
+		const res = await response.json();
+		setPlayers(res);
+		socket.emit('new-game',res);
+		document.getElementById("game").style.display = "block";
+		document.getElementById(styles['gameOver']).style.display = "none";
+	}
 
-        .title,
-        .description {
-          text-align: center;
-        }
+	useEffect(()=>{
+		socketInitializer();
+	},[]);
 
-        .description {
-          line-height: 1.5;
-          font-size: 1.5rem;
-        }
+	useEffect(()=>{
+		async function f(){
+			if(socketId!==''){
+				await playerLogin();
+				//await getPlayers();
+			}
+		}
+		f();
+	},[socketId]);
 
-        code {
-          background: #fafafa;
-          border-radius: 5px;
-          padding: 0.75rem;
-          font-size: 1.1rem;
-          font-family: Menlo, Monaco, Lucida Console, Liberation Mono,
-            DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
-        }
+	useEffect(()=>{
+		let playersMoney = [];
+		let playersGroup = [];
+		let baseAllMoney = players.length * baseMyMoney;
+		let totalPlayersMoney = 0;
+		players.forEach((player,index)=>{
+			totalPlayersMoney += player.money;
+			let playerName = '玩家'+player.rowNum;
+			if(player.socketId == socketId){
+				setMyId(player.playerId);
+				setMyMoney(player.money);
+				playerName = '我';
+			}
+			if(player.isCurrentPlayer){
+				setCurrentPlayer(player.playerId)
+			}
+			playersGroup[player.playerId] = {name:playerName, playerId:player.playerId, money:player.money};
+			if(player.rowNum % 3 == 0){
+				playersMoney.push(playersGroup);
+				playersGroup = [];
+			}
+		});
+		if(playersGroup.length > 0){
+			playersMoney.push(playersGroup);
+		}
+		setPlayersMoney(playersMoney);
+		setTotalMoney( baseAllMoney - totalPlayersMoney);
+	},[players]);
 
-        .grid {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-wrap: wrap;
+	useEffect(()=>{
+		if(currentPlayer == myId){
+			setMyTurn(true);
+		}else{
+			setMyTurn(false);
+		}
+	},[currentPlayer,myId]);
 
-          max-width: 800px;
-          margin-top: 3rem;
-        }
+	useEffect(()=>{
+		if(bets > totalMoney) {
+			alert('最多可下注 $'+totalMoney);
+			setInputBets(totalMoney);
+			setBets(totalMoney);
+		}else if(bets > myMoney) {
+			alert('沒錢了(ಥ﹏ಥ) 最多可下注 $'+myMoney);
+			setInputBets(myMoney);
+			setBets(myMoney);
+		}
+	},[bets]);
 
-        .card {
-          margin: 1rem;
-          flex-basis: 45%;
-          padding: 1.5rem;
-          text-align: left;
-          color: inherit;
-          text-decoration: none;
-          border: 1px solid #eaeaea;
-          border-radius: 10px;
-          transition: color 0.15s ease, border-color 0.15s ease;
-        }
+	useEffect(()=>{
+		console.log(ranking.length)
+		if(ranking.length > 0){
+			document.getElementById("game").style.display = "none";
+			document.getElementById(styles['gameOver']).style.display = "block";
+		}
+	},[ranking]);
 
-        .card:hover,
-        .card:focus,
-        .card:active {
-          color: #0070f3;
-          border-color: #0070f3;
-        }
+	let the3edCardDev = <>
+		<button onClick={getCard} disabled={!isMyTurn || !myCards[0].number || bets<=0}>補牌</button>
+		<button onClick={nextPlayer} disabled={!isMyTurn || !myCards[0].number}>pass</button>
+	</>;
+	let theDealCardDev = <>
+		<button onClick={dealCards} disabled={!isMyTurn || myCards[0].number}>重新發牌</button>
+	</>
+	if(my3edCards.imgName) {
+		the3edCardDev = <img src={`/images/pocker/${my3edCards.imgName}`} />;
+		theDealCardDev = <button onClick={nextPlayer}>pass</button>;
+	}else if(myMoney <=0 ) {
+		theDealCardDev = <button onClick={gameOver} disabled={!isMyTurn}>遊戲結束</button>;
+	}
 
-        .card h3 {
-          margin: 0 0 1rem 0;
-          font-size: 1.5rem;
-        }
-
-        .card p {
-          margin: 0;
-          font-size: 1.25rem;
-          line-height: 1.5;
-        }
-
-        .logo {
-          height: 1em;
-        }
-
-        @media (max-width: 600px) {
-          .grid {
-            width: 100%;
-            flex-direction: column;
-          }
-        }
-      `}</style>
-
-      <style jsx global>{`
-        html,
-        body {
-          padding: 0;
-          margin: 0;
-          font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
-            Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
-            sans-serif;
-        }
-
-        * {
-          box-sizing: border-box;
-        }
-      `}</style>
-    </div>
-  )
+	return (
+		<>
+			<Head>
+				<title>射龍門</title>
+			</Head>
+			<div className={styles.mainContent} id="game">
+				<ul className={styles.playerArea}>
+					{
+						players.map( (player, index) => {
+							let name = `玩家${player.rowNum}`;
+							let arrow = '';
+							let colorClass = '';
+							if(player.playerId == myId){
+								name = '我';
+							}
+							if(index < Object.keys(players).length - 1){
+								arrow = ' → ';
+							}
+							if(player.playerId == currentPlayer){
+								colorClass = 'red'
+							}
+							return (
+								<li key={index}><span className={colorClass} >{name}</span> {arrow} </li>
+							);
+						})
+					}
+				</ul>
+				<div className={styles.publicMoney}>${totalMoney}</div>
+				<div className={styles.gameBoard}>
+					<div className={styles.card1}><img src={`/images/pocker/${myCards[0].imgName}`} /></div>
+					<div className={styles.card3}>{the3edCardDev}</div>
+					<div className={styles.card2}><img src={`/images/pocker/${myCards[1].imgName}`} /></div>
+				</div>
+				<div className={styles.bets+(myCards[0].number? " "+styles.active : "")}>
+					<div className={styles.title}>下注</div>
+					<div className={styles.coin+(bets==10? " "+styles.active : "")} onClick={() => setBets(10)}>$10</div>
+					<div className={styles.coin+(bets==30? " "+styles.active : "")} onClick={() => setBets(30)}>$30</div>
+					<div className={styles.coin+(bets==50? " "+styles.active : "")} onClick={() => setBets(50)}>$50</div>
+					<div className={styles.inputCoin}>
+						<input className={(bets && bets==inputBets? styles.active : "")} type="number" value={inputBets} onChange={onChangeInputBets} />
+					</div>
+				</div>
+				<div className={styles.dealCards}>
+					{theDealCardDev}
+				</div>
+				<table className={styles.privateMoney}>
+					<tbody>
+					{
+						playersMoney.map( (groups, index) => {
+							return(
+								<tr key={index}>
+									{
+										groups.map((plmny,index) => {
+											return(<td key={index} className={(plmny.playerId == myId)? styles.me:''}>{plmny.name}：${plmny.money}</td>)
+										})
+									}
+								</tr>
+							)
+						})
+					}
+					</tbody>
+				</table>
+			</div>
+			<div className={styles.mainContent} id={styles['gameOver']}>
+				<div className={styles.publicMoney}>${totalMoney}</div>
+				<table>
+					<thead>
+						<tr>
+							<th>排名</th>
+							<th>玩家</th>
+							<th>勝負</th>
+						</tr>
+					</thead>
+					<tbody>
+					{
+						ranking.map((rank, index) => {
+							let rankName = `玩家${rank.rowNum}`;
+							if (rank.playerId == myId) {
+								rankName = '我';
+							}
+							let totalMyMoney = rank.money - baseMyMoney;
+							let totalMyMoneyText = '$'+totalMyMoney;
+							if(totalMyMoney < 0){
+								totalMyMoneyText = '-$'+(totalMyMoney * -1);
+							}
+							return (
+								<tr>
+									<td>{index+1}</td>
+									<td>{rankName}</td>
+									<td>{totalMyMoneyText}</td>
+								</tr>
+							)
+						})
+					}
+					</tbody>
+				</table>
+				<button onClick={newGame}>再玩一局</button>
+			</div>
+		</>
+	)
 }

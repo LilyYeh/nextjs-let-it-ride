@@ -1,0 +1,143 @@
+.mainContent {
+	width: 100%;
+	margin: auto;
+	padding: 1rem;
+	position: relative;
+	height: 90vh;
+}
+
+ul.playerArea {
+	display: flex;
+	width: fit-content;
+	margin: auto;
+	margin-bottom: 3rem;
+	li {
+		margin-right: 0.2rem;
+	}
+}
+
+.publicMoney {
+	margin: auto;
+	margin-bottom: 1rem;
+	width: max-content;
+	font-size: 2rem;
+	font-weight: bold;
+}
+
+.gameBoard {
+	display: flex;
+	width: max-content;
+	margin: 0 auto 1rem;
+	.card1, .card2, .card3 {
+		display:inline-flex;
+		margin: 0 0.5rem;
+		font-size: 4rem;
+		font-weight: bold;
+		align-items: center;
+		justify-content: center;
+		width: 6rem;
+		min-height: 8rem;
+		img {
+			width: 84px;
+			height: 120px;
+		}
+	}
+
+	.card3 {
+		border: 1px;
+		flex-wrap: wrap;
+	}
+
+	.getCard3 {
+		cursor: pointer;
+	}
+}
+
+.bets {
+	width: max-content;
+	margin: auto;
+	display: none;
+	&.active {
+		display: block;
+	}
+
+	.title {
+		width: 100%;
+		margin-bottom: 0.5rem;
+	}
+
+	.coin {
+		display: inline-flex;
+		width: 3rem;
+		height: 3rem;
+		justify-content: center;
+		line-height: 3rem;
+		border: 1px solid #000;
+		border-radius: 50%;
+		margin: 0 0.3rem;
+		cursor: pointer;
+		&:hover, &.active {
+			background: gold;
+		}
+	}
+
+	.inputCoin {
+		display: inline-flex;
+		input {
+			width: 5rem;
+			margin: 0 0.3rem;
+			font-size: 1.5rem;
+			&.active {
+				background: gold;
+			}
+		}
+	}
+}
+
+.dealCards {
+	margin: auto;
+	width: max-content;
+	margin-top: 3rem;
+}
+
+table.privateMoney {
+	position: absolute;
+	bottom: 0;
+	width: calc(100% - 2rem);
+	font-size: 1.1rem;
+	tr {
+		td {
+			padding: 1rem 0.4rem;
+			width: calc((100% - 3rem) / 3);
+			border: 1px solid;
+			text-align: center;
+			&.me {
+				background: gold;
+			}
+		}
+
+	}
+}
+
+#gameOver {
+	display: none;
+	table {
+		margin-bottom: 3rem;
+		width: 100%;
+		th {
+			font-weight: bold;
+			background: gold;
+		}
+		th, td {
+			border: 1px solid;
+			text-align: center;
+			padding: 1rem;
+		}
+	}
+}
+
+@media screen and (min-width: 376px) {
+	.mainContent{
+		max-width: 376px;
+	}
+}
