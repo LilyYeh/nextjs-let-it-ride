@@ -1,0 +1,57 @@
+version: '3'
+
+networks:
+  backend:
+  frontend:
+
+services:
+  ### node #########################################
+  nextjs:
+    container_name: nextjs-let-it-ride
+    networks:
+      - frontend
+      - backend
+    restart: always
+    image: node:18.5.0
+    ports:
+      - "80:3000"
+    working_dir: '/usr/src/nextjs/'
+    command: "npm run dev"
+    volumes:
+      - ../:/usr/src/nextjs
+
+  ### database ##############################################
+  database:
+    container_name: mysql
+    networks:
+      - backend
+    image: mysql:8
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: let-it-ride
+      MYSQL_USER: default
+      MYSQL_PASSWORD: secret
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - ./mysql/local.cnf:/etc/mysql/conf.d/local.cnf
+      #- ./mysql/data:/var/lib/mysql
+      - ./mysql/data:/docker-entrypoint-initdb.d
+
+  ### phpMyAdmin ###########################################
+  phpmyadmin:
+    container_name: phpmyadmin
+    networks:
+      - frontend
+      - backend
+    image: phpmyadmin/phpmyadmin:latest
+    ports:
+      - "8888:80"
+    environment:
+      PMA_HOST: 'mysql'
+      PMA_PORT: 3306
+      PMA_USER: 'default'
+      PMA_PASSWORD: 'secret'
+    depends_on:
+      - "database"
