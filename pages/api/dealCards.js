@@ -9,7 +9,7 @@ export default async function handler(req, res) {
 		const socketId = JSON.parse(req.body).socketId;
 
 		// 棄牌
-		await foldCards(socketId);
+		//await foldCards(socketId);
 
 		// 牌庫是否有牌？
 		var totalCards = await countCards();

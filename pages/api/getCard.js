@@ -23,10 +23,21 @@ export default async function handler(req, res) {
 		// 射龍門(補牌)
 		const myCards = JSON.parse(req.body).myCards;
 		let bets = JSON.parse(req.body).bets;
-		if(myCards[1].number < my3edCards.number && my3edCards.number < myCards[0].number){
-
-		}else{
-			bets = -1 * bets;
+		let bigOrSmall = JSON.parse(req.body).bigOrSmall;
+		if(myCards[0].number == myCards[1].number){
+			if((bigOrSmall == 'big' && my3edCards.number < myCards[0].number) || (bigOrSmall == 'small' && my3edCards.number > myCards[0].number)){
+				bets = -1 * bets;
+			}else if(my3edCards.number == myCards[0].number){
+				bets = -3 * bets;
+			}else if(bigOrSmall === ''){ //正常不回發生
+				bets = -1 * bets;
+			}
+		}else if(myCards[0].number <= my3edCards.number || my3edCards.number <= myCards[1].number){
+			if(my3edCards.number == myCards[0].number || myCards[1].number == my3edCards.number){
+				bets = -2 * bets;
+			}else{
+				bets = -1 * bets;
+			}
 		}
 
 		const baseMoney = JSON.parse(req.body).baseMoney;

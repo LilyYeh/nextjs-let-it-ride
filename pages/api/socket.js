@@ -43,6 +43,10 @@ export default function handler(req, res) {
 		socket.on('new-game',  playersData => {
 			socket.broadcast.emit('new-game', playersData);
 		});
+
+		socket.on('keep-going',  playersData => {
+			socket.broadcast.emit('keep-going', playersData);
+		});
 	});
 	res.end();
 }
