@@ -3,6 +3,8 @@ import styles from './index.module.scss';
 import { useEffect, useState } from 'react';
 import io from "socket.io-client";
 let socket;
+import useRate from "./useRate";
+import PlayerMoney from './playerMoney'
 
 export default function Home() {
 	const [ socketId, setSocketId ] = useState('');
@@ -18,7 +20,7 @@ export default function Home() {
 	const [ my3edCards, set3edCard ] = useState({});
 
 	const baseMoney = 10;
-	const baseMyMoney = 100;
+	const baseMyMoney = 1000;
 	const [ inputBets, setInputBets ] = useState(0);
 	const [ bets, setBets ] = useState(0);
 	const [ bigOrSmall, setBigOrSmall ] = useState('');
@@ -247,7 +249,7 @@ export default function Home() {
 			playersMoney.push(playersGroup);
 		}
 		setPlayersMoney(playersMoney);
-		setTotalMoney( baseAllMoney - totalPlayersMoney);
+		setTotalMoney(baseAllMoney - totalPlayersMoney);
 		setIsAnyPlayerCanPlay(canPlay);
 		setIsAnyPlayerCantPlay(someoneCantPlay);
 	},[players]);
@@ -327,28 +329,7 @@ export default function Home() {
 				<title>射龍門</title>
 			</Head>
 			<div className={styles.mainContent} id="game">
-				<ul className={styles.playerArea}>
-					{
-						players.map( (player, index) => {
-							let name = `玩家${player.rowNum}`;
-							let arrow = '';
-							let colorClass = '';
-							if(player.playerId == myId){
-								name = '我';
-							}
-							if(index < Object.keys(players).length - 1){
-								arrow = ' → ';
-							}
-							if(player.playerId == currentPlayer){
-								colorClass = 'red'
-							}
-							return (
-								<li key={index}><span className={colorClass} >{name}</span> {arrow} </li>
-							);
-						})
-					}
-				</ul>
-				<div className={styles.publicMoney}>${totalMoney}</div>
+				<div className={styles.publicMoney}>${useRate(totalMoney)}</div>
 				<div className={styles.gameBoard}>
 					<div className={styles.card1}><img src={`/images/pocker/${myCards[0].imgName}`} /></div>
 					<div className={styles.card3}>{the3edCardDev}</div>
@@ -374,7 +355,7 @@ export default function Home() {
 				<div className={styles.dealCards}>
 					{theDealCardDev}
 				</div>
-				<table className={styles.privateMoney}>
+				<table className={styles.privateMoney} id="moneyTable">
 					<tbody>
 					{
 						playersMoney.map( (groups, index) => {
@@ -382,7 +363,7 @@ export default function Home() {
 								<tr key={index}>
 									{
 										groups.map((plmny,index) => {
-											return(<td key={index} className={(plmny.playerId == myId)? styles.me:''}>{plmny.name}：${plmny.money}</td>)
+											return (<PlayerMoney key={index} playerData={plmny} currentPlayer={currentPlayer} baseMyMoney={baseMyMoney} />)
 										})
 									}
 								</tr>
