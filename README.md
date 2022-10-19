@@ -1,5 +1,5 @@
 # 射龍門
-使用 ReactJS & Next.js 開發的小遊戲
+使用 ReactJS & Next.js 開發的小遊戲<br />
 快來與朋友線上連線賭一把八～
 
 #### 環境建置
