@@ -12,10 +12,48 @@ img {
 	vertical-align: bottom;
 }
 
+button {
+	cursor: pointer;
+}
+
 .red {
 	color: red;
 }
 
 .mg-right-1rem {
 	margin-right: 1rem;
+}
+
+.btn {
+	padding: 0.25rem 0.5rem;
+	font-size: 1.4rem;
+	border-radius: 0.4rem;
+	&:disabled {
+		color: rgba(16, 16, 16, 0.3);
+		border: 1px rgba(16, 16, 16, 0.3) solid;
+	}
+}
+
+.btn-red {
+	color: #fff;
+	background-color: #dc3545;
+	border-color: #dc3545;
+}
+
+.btn-red-outline {
+	background: #fff;
+	color: #dc3545;
+	border: 1px solid #dc3545;
+}
+
+.btn-black {
+	color: #fff;
+	background: #000;
+	border-color: #000;
+}
+
+.btn-black-outline {
+	background: #fff;
+	color: #000;
+	border: 1px solid #000;
 }

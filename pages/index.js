@@ -103,14 +103,10 @@ export default function Home() {
 		socket.emit('update-players',res);
 	}
 
-	function onChangeInputBets(e) {
-		let b = Math.ceil(e.target.value/10) * 10
-		if(e.target.value < inputBets){
-			b = Math.floor(e.target.value/10) * 10;
-		}
-		if(b <=0 ) return;
-		setInputBets(b);
-		setBets(b);
+	function onChangeInputBets(value) {
+		if(value <=0 ) return;
+		setInputBets(value);
+		setBets(value);
 	}
 
 	async function socketInitializer(){
@@ -299,28 +295,28 @@ export default function Home() {
 	},[ranking]);
 
 	let the3edCardDev = <>
-		<button onClick={getCard} disabled={!isMyTurn || !myCards[0].number || bets<=0 || totalMoney <=0}>射龍門</button>
-		<button onClick={nextPlayer} disabled={!isMyTurn || !myCards[0].number || totalMoney <=0}>pass</button>
+		<button className={'btn '+'btn-red-outline '+styles.shoot} onClick={getCard} disabled={!isMyTurn || !myCards[0].number || bets<=0 || totalMoney <=0}>射</button>
+		<button className={'btn '+'btn-black-outline '+styles.pass} onClick={nextPlayer} disabled={!isMyTurn || !myCards[0].number || totalMoney <=0}>pass</button>
 	</>;
 	if(my3edCards.imgName) {
 		the3edCardDev = <img src={`/images/pocker/${my3edCards.imgName}`} />;
 	}
 
 	let theDealCardDev = <>
-		<button onClick={dealCards} disabled={!isMyTurn || myCards[0].number}>重新發牌</button>
+		<button className={'btn '+'btn-red-outline '+styles.deal} onClick={dealCards} disabled={!isMyTurn || myCards[0].number}>重新發牌</button>
 	</>
 	if(totalMoney <= 0) {
 		theDealCardDev = <>
-			<button onClick={gameOver} className={'mg-right-1rem'}>遊戲結束</button>
-			<button onClick={keepGoing}>遊戲繼續</button>
+			<button className={'btn '+'btn-black-outline '+styles.gameOver+' mg-right-1rem'} onClick={gameOver}>遊戲結束</button>
+			<button className={'btn '+'btn-red-outline '+styles.keepGoing} onClick={keepGoing}>遊戲繼續</button>
 		</>;
 		if(isAnyPlayerCantPlay) {
-			theDealCardDev = <button onClick={gameOver}>遊戲結束</button>;
+			theDealCardDev = <button className={'btn '+'btn-black-outline '+styles.gameOver} onClick={gameOver}>遊戲結束</button>;
 		}
 	}else if(!isAnyPlayerCanPlay){
-		theDealCardDev = <button onClick={gameOver}>遊戲結束</button>;
+		theDealCardDev = <button className={'btn '+'btn-black-outline '+styles.gameOver} onClick={gameOver}>遊戲結束</button>;
 	}else if(isMyTurn && (myMoney < 20 || my3edCards.imgName)){
-		theDealCardDev = <button onClick={nextPlayer}>pass</button>;
+		theDealCardDev = <button className={'btn '+'btn-black-outline '+styles.pass} onClick={nextPlayer}>完成</button>;
 	}
 
 	return (
@@ -329,6 +325,7 @@ export default function Home() {
 				<title>射龍門</title>
 			</Head>
 			<div className={styles.mainContent} id="game">
+				<h1 className={styles.h1}><img src={"/images/logo.png"} /></h1>
 				<div className={styles.publicMoney}>${useRate(totalMoney)}</div>
 				<div className={styles.gameBoard}>
 					<div className={styles.card1}><img src={`/images/pocker/${myCards[0].imgName}`} /></div>
@@ -336,7 +333,7 @@ export default function Home() {
 					<div className={styles.card2}><img src={`/images/pocker/${myCards[1].imgName}`} /></div>
 				</div>
 				<div className={styles.bets+(myCards[0].number? " "+styles.active : "")}>
-					<div className={styles.title}>下注</div>
+					<label className={styles.title}>下注</label>
 					<div className={styles.bigOrSmallArea+(myCards[0].number==myCards[1].number? " "+styles.active : "")}>
 						<span className={styles.inputRadio} onClick={(e) => setBigOrSmall('big')}>
 							<input type="radio" name="bigOrSmall" value="big" onChange={(e) => setBigOrSmall('big')} checked={bigOrSmall=='big'} />大
@@ -348,8 +345,10 @@ export default function Home() {
 					<div className={styles.coin+(bets==10? " "+styles.active : "")} onClick={() => setBets(10)}>$10</div>
 					<div className={styles.coin+(bets==30? " "+styles.active : "")} onClick={() => setBets(30)}>$30</div>
 					<div className={styles.coin+(bets==50? " "+styles.active : "")} onClick={() => setBets(50)}>$50</div>
-					<div className={styles.inputCoin}>
-						<input className={(bets && bets==inputBets? styles.active : "")} type="number" value={inputBets} onChange={onChangeInputBets} />
+					<div className={styles.inputCoin+" "+(bets && bets==inputBets? styles.active : "")}>
+						<button className={styles.minus} onClick={() => onChangeInputBets(inputBets-10)}>–</button>
+						<input type="text" value={inputBets} />
+						<button className={styles.plus} onClick={() => onChangeInputBets(inputBets+10)}>+</button>
 					</div>
 				</div>
 				<div className={styles.dealCards}>
@@ -374,6 +373,7 @@ export default function Home() {
 				</table>
 			</div>
 			<div className={styles.mainContent} id={styles['gameOver']}>
+				<h1 className={styles.h1}><img src={"/images/logo.png"} /></h1>
 				<div className={styles.publicMoney}>${totalMoney}</div>
 				<table>
 					<thead>
@@ -408,7 +408,7 @@ export default function Home() {
 					}
 					</tbody>
 				</table>
-				<button onClick={newGame}>重新遊戲</button>
+				<button className={'btn '+'btn-red-outline '+styles.newGame} onClick={newGame}>重新遊戲</button>
 			</div>
 		</>
 	)

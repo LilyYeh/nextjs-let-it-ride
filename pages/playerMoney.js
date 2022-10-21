@@ -1,4 +1,3 @@
-import { useEffect, useState, useRef } from 'react';
 import useRate from "./useRate";
 import styles from "./index.module.scss";
 
