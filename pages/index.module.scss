@@ -26,8 +26,33 @@
 	background: white;
 	width: fit-content;
 	margin: 0 auto 1rem;
-	img {
+	&:after {
+		content: "";
+		display: block;
+		background: url(/images/logo-1.png) no-repeat;
+		background-size: 100% auto;
 		width: 10rem;
+		height: 4.6rem;
+		animation-name: example;
+		animation-duration: 1s;
+		animation-iteration-count: infinite;
+		animation-timing-function: ease;
+	}
+}
+
+/* The animation code */
+@keyframes example {
+	0%   {
+		background: url(/images/logo-1.png) no-repeat;
+		background-size: 100% auto;
+	}
+	50%  {
+		background: url(/images/logo-2.png);
+		background-size: 100% auto;
+	}
+	100% {
+		background: url(/images/logo-1.png);
+		background-size: 100% auto;
 	}
 }
 
@@ -278,6 +303,14 @@ table.privateMoney {
 			&.me {
 				background: gold;
 			}
+			/*&:before {
+				content: "";
+				display: block;
+				background: url(/images/money.svg);
+				background-size: 100% auto;
+				width: 100%;
+				height: 100%;
+			}*/
 		}
 
 	}

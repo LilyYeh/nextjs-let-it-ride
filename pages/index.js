@@ -359,7 +359,7 @@ export default function Home() {
 				<title>射龍門</title>
 			</Head>
 			<div className={styles.mainContent} id="game">
-				<h1 className={styles.h1}><img src={"/images/logo.png"} /></h1>
+				<h1 className={styles.h1}></h1>
 				<div className={styles.publicMoney}>${useRate(totalMoney)}</div>
 				<div id="myGameBoard">
 				<div className={styles.gameBoard}>
