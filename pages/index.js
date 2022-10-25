@@ -22,6 +22,7 @@ export default function Home() {
 	const baseMoney = 10;
 	const baseMyMoney = 1000;
 	const [ inputBets, setInputBets ] = useState(0);
+	const [ buttonBets, setButtonBets ] = useState(0);
 	const [ bets, setBets ] = useState(0);
 	const [ bigOrSmall, setBigOrSmall ] = useState('');
 	const [ myMoney, setMyMoney ] = useState(baseMyMoney);
@@ -31,7 +32,8 @@ export default function Home() {
 
 	const [ ranking, setRanking ] = useState([]);
 
-	async function dealCards(){
+	async function dealCards(e){
+		e.target.disabled = true;
 		const apiUrlEndpoint = `/api/dealCards`;
 		const getData = {
 			method: "POST",
@@ -46,7 +48,8 @@ export default function Home() {
 		set3edCard({});
 	}
 
-	async function getCard(){
+	async function getCard(e){
+		e.target.disabled = true;
 		const apiUrlEndpoint = `/api/getCard`;
 		const getData = {
 			method: "POST",
@@ -67,7 +70,8 @@ export default function Home() {
 		socket.emit('update-players',res.players);
 	}
 
-	async function nextPlayer(){
+	async function nextPlayer(e){
+		e.target.disabled = true;
 		const apiUrlEndpoint = `/api/setNextPlayer`;
 		const getData = {
 			method: "POST",
@@ -84,6 +88,7 @@ export default function Home() {
 		set3edCard({});
 		setBets(0);
 		setInputBets(0);
+		setButtonBets(0);
 	}
 
 	async function playerLogin(){
@@ -103,10 +108,53 @@ export default function Home() {
 		socket.emit('update-players',res);
 	}
 
-	function onChangeInputBets(value) {
-		if(value <=0 ) return;
-		setInputBets(value);
-		setBets(value);
+	async function onChangeInputBets(value) {
+		let input = 0;
+		if(value=='+'){
+			if(buttonBets){
+				input = inputBets + buttonBets;
+			}else{
+				input = bets+10;
+			}
+		}else if(value=='-'){
+			if(buttonBets){
+				//input = inputBets - buttonBets;
+				input = inputBets - 10;
+			}else{
+				input = bets-10;
+			}
+		}
+		const myBets = await checkBets(input);
+		setInputBets(myBets);
+		setBets(myBets);
+	}
+
+	async function onChangeButtonBets(value) {
+		const myBets = await checkBets(value);
+		if(myBets == value) {
+			setButtonBets(value);
+			setInputBets(value);
+			setBets(value);
+		}
+	}
+
+	function checkBets(value) {
+		let maxBets = Math.floor(myMoney / 2);
+		if(myCards[0].number == myCards[1].number){
+			maxBets = Math.floor(myMoney / 3);
+		}
+		if(value > totalMoney) {
+			//alert('最多可下注 $'+totalMoney);
+			return totalMoney;
+
+		}else if(value > maxBets) {
+			let mB = Math.floor(maxBets/10) * 10;
+			//alert('沒錢了(ಥ﹏ಥ) 最多可下注 $'+mB);
+			return mB;
+		}else if(value <= 0) {
+			return 0;
+		}
+		return value;
 	}
 
 	async function socketInitializer(){
@@ -138,7 +186,8 @@ export default function Home() {
 		});
 	}
 
-	async function gameOver() {
+	async function gameOver(e) {
+		e.target.disabled = true;
 		const apiUrlEndpoint = `/api/gameOver`;
 		const getData = {
 			method: "POST",
@@ -153,7 +202,8 @@ export default function Home() {
 		socket.emit('game-over',res);
 	}
 
-	async function newGame() {
+	async function newGame(e) {
+		e.target.disabled = true;
 		const apiUrlEndpoint = `/api/newGame`;
 		const getData = {
 			method: "POST",
@@ -170,7 +220,8 @@ export default function Home() {
 		socket.emit('new-game',res);
 	}
 
-	async function keepGoing() {
+	async function keepGoing(e) {
+		e.target.disabled = true;
 		const apiUrlEndpoint = `/api/keepGoing`;
 		const getData = {
 			method: "POST",
@@ -271,23 +322,6 @@ export default function Home() {
 	},[myCards]);
 
 	useEffect(()=>{
-		let maxBets = Math.floor(myMoney / 2);
-		if(myCards[0].number == myCards[1].number){
-			maxBets = Math.floor(myMoney / 3);
-		}
-		if(bets > totalMoney) {
-			alert('最多可下注 $'+totalMoney);
-			setInputBets(totalMoney);
-			setBets(totalMoney);
-		}else if(bets > maxBets) {
-			let mB = Math.floor(maxBets/10) * 10;
-			alert('沒錢了(ಥ﹏ಥ) 最多可下注 $'+mB);
-			setInputBets(mB);
-			setBets(mB);
-		}
-	},[bets]);
-
-	useEffect(()=>{
 		if(ranking.length > 0){
 			document.getElementById("game").style.display = "none";
 			document.getElementById(styles['gameOver']).style.display = "block";
@@ -327,6 +361,7 @@ export default function Home() {
 			<div className={styles.mainContent} id="game">
 				<h1 className={styles.h1}><img src={"/images/logo.png"} /></h1>
 				<div className={styles.publicMoney}>${useRate(totalMoney)}</div>
+				<div id="myGameBoard">
 				<div className={styles.gameBoard}>
 					<div className={styles.card1}><img src={`/images/pocker/${myCards[0].imgName}`} /></div>
 					<div className={styles.card3}>{the3edCardDev}</div>
@@ -342,17 +377,18 @@ export default function Home() {
 							<input type="radio" name="bigOrSmall" value="small" onChange={(e) => setBigOrSmall('small')} checked={bigOrSmall=='small'} />小
 						</span>
 					</div>
-					<div className={styles.coin+(bets==10? " "+styles.active : "")} onClick={() => setBets(10)}>$10</div>
-					<div className={styles.coin+(bets==30? " "+styles.active : "")} onClick={() => setBets(30)}>$30</div>
-					<div className={styles.coin+(bets==50? " "+styles.active : "")} onClick={() => setBets(50)}>$50</div>
+					<div className={styles.coin+(inputBets==10? " "+styles.active : "")} onClick={() => onChangeButtonBets(10)}>$10</div>
+					<div className={styles.coin+(inputBets==30? " "+styles.active : "")} onClick={() => onChangeButtonBets(30)}>$30</div>
+					<div className={styles.coin+(inputBets==50? " "+styles.active : "")} onClick={() => onChangeButtonBets(50)}>$50</div>
 					<div className={styles.inputCoin+" "+(bets && bets==inputBets? styles.active : "")}>
-						<button className={styles.minus} onClick={() => onChangeInputBets(inputBets-10)}>–</button>
-						<input type="text" value={inputBets} />
-						<button className={styles.plus} onClick={() => onChangeInputBets(inputBets+10)}>+</button>
+						<button className={styles.minus} onClick={() => onChangeInputBets('-')}>–</button>
+						<input type="text" value={`$${inputBets}`} />
+						<button className={styles.plus} onClick={() => onChangeInputBets('+')}>+</button>
 					</div>
 				</div>
 				<div className={styles.dealCards}>
 					{theDealCardDev}
+				</div>
 				</div>
 				<table className={styles.privateMoney} id="moneyTable">
 					<tbody>
