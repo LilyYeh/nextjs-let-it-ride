@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import io from "socket.io-client";
 let socket;
 import useRate from "./useRate";
-import PlayerMoney from './playerMoney'
+import PlayerMoney from './playerMoney';
+import PlayerRanking from './playerRanking';
 
 export default function Home() {
 	const [ socketId, setSocketId ] = useState('');
@@ -13,6 +14,8 @@ export default function Home() {
 	const [ playersMoney, setPlayersMoney ] = useState([]);
 	const [ currentPlayer, setCurrentPlayer ] = useState(0);
 	const [ isMyTurn, setMyTurn ] = useState(false);
+	const [ minPrivateMoney, setMinPrivateMoney ] = useState(0);
+	const [ maxPrivateMoney, setMaxPrivateMoney ] = useState(0);
 
 	//myCards[0]、myCards[1] 龍柱
 	const defaultMyCards = [{"number":0,"type":"","imgName":"back.jpg"},{"number":0,"type":"","imgName":"back.jpg"}]
@@ -267,6 +270,10 @@ export default function Home() {
 		let totalPlayersMoney = 0;
 		let canPlay = false;
 		let someoneCantPlay = false;
+		let minMoney = 9999;
+		let maxMoney = 0;
+		let minMoneyPlayer = 0;
+		let maxMoneyPlayer = 0;
 		players.forEach((player,index)=>{
 			if(player.money >= 20){
 				//還有人有錢
@@ -275,6 +282,16 @@ export default function Home() {
 			if(player.money < 30){
 				//有人沒錢了
 				someoneCantPlay = true;
+			}
+			//剩餘錢最少的玩家
+			if(player.money < minMoney){
+				minMoney = player.money;
+				minMoneyPlayer = player.playerId;
+			}
+			//剩餘錢最多的玩家
+			if(player.money > maxMoney){
+				maxMoney = player.money;
+				maxMoneyPlayer = player.playerId;
 			}
 			totalPlayersMoney += player.money;
 			let playerName = '玩家'+player.rowNum;
@@ -287,13 +304,17 @@ export default function Home() {
 				setCurrentPlayer(player.playerId)
 			}
 			playersGroup[player.playerId] = {name:playerName, playerId:player.playerId, money:player.money};
-			if(player.rowNum % 3 == 0){
+			if(player.rowNum % 2 == 0){
 				playersMoney.push(playersGroup);
 				playersGroup = [];
 			}
 		});
 		if(playersGroup.length > 0){
 			playersMoney.push(playersGroup);
+		}
+		if(maxMoney > minMoney) {
+			setMinPrivateMoney(minMoneyPlayer);
+			setMaxPrivateMoney(maxMoneyPlayer);
 		}
 		setPlayersMoney(playersMoney);
 		setTotalMoney(baseAllMoney - totalPlayersMoney);
@@ -358,7 +379,8 @@ export default function Home() {
 			<Head>
 				<title>射龍門</title>
 			</Head>
-			<div className={styles.mainContent} id="game">
+			<div id="game">
+				<div className={styles.mainContent} id="game">
 				<h1 className={styles.h1}></h1>
 				<div className={styles.publicMoney}>${useRate(totalMoney)}</div>
 				<div id="myGameBoard">
@@ -382,7 +404,7 @@ export default function Home() {
 					<div className={styles.coin+(inputBets==50? " "+styles.active : "")} onClick={() => onChangeButtonBets(50)}>$50</div>
 					<div className={styles.inputCoin+" "+(bets && bets==inputBets? styles.active : "")}>
 						<button className={styles.minus} onClick={() => onChangeInputBets('-')}>–</button>
-						<input type="text" value={`$${inputBets}`} />
+						<input type="text" value={`$${inputBets}`} onChange={onChangeInputBets}/>
 						<button className={styles.plus} onClick={() => onChangeInputBets('+')}>+</button>
 					</div>
 				</div>
@@ -390,26 +412,33 @@ export default function Home() {
 					{theDealCardDev}
 				</div>
 				</div>
+			</div>
 				<table className={styles.privateMoney} id="moneyTable">
-					<tbody>
-					{
-						playersMoney.map( (groups, index) => {
-							return(
-								<tr key={index}>
-									{
-										groups.map((plmny,index) => {
-											return (<PlayerMoney key={index} playerData={plmny} currentPlayer={currentPlayer} baseMyMoney={baseMyMoney} />)
-										})
-									}
-								</tr>
-							)
-						})
-					}
-					</tbody>
-				</table>
+				<tbody>
+				{
+					playersMoney.map( (groups, index) => {
+						return(
+							<tr key={index}>
+								{
+									groups.map((plmny, index) => {
+										return (<PlayerMoney key={index}
+										                     playerData={plmny}
+										                     currentPlayer={currentPlayer}
+										                     baseMyMoney={baseMyMoney}
+										                     minPrivateMoney={minPrivateMoney}
+										                     maxPrivateMoney={maxPrivateMoney}
+										/>)
+									})
+								}
+							</tr>
+						)
+					})
+				}
+				</tbody>
+			</table>
 			</div>
 			<div className={styles.mainContent} id={styles['gameOver']}>
-				<h1 className={styles.h1}><img src={"/images/logo.png"} /></h1>
+				<h1 className={styles.h1}></h1>
 				<div className={styles.publicMoney}>${totalMoney}</div>
 				<table>
 					<thead>
@@ -423,23 +452,13 @@ export default function Home() {
 					<tbody>
 					{
 						ranking.map((rank, index) => {
-							let rankName = `玩家${rank.rowNum}`;
-							if (rank.playerId == myId) {
-								rankName = '我';
-							}
-							let totalMyMoney = rank.money - baseMyMoney;
-							let totalMyMoneyText = '$'+totalMyMoney;
-							if(totalMyMoney < 0){
-								totalMyMoneyText = '-$'+(totalMyMoney * -1);
-							}
-							return (
-								<tr key={index}>
-									<td>{index+1}</td>
-									<td>{rankName}</td>
-									<td>{baseMyMoney}</td>
-									<td>{totalMyMoneyText}</td>
-								</tr>
-							)
+							return (<PlayerRanking key={index}
+						                         ranking={index+1}
+							                     playerData={rank}
+							                     baseMyMoney={baseMyMoney}
+							                     minPrivateMoney={minPrivateMoney}
+							                     maxPrivateMoney={maxPrivateMoney}
+							/>)
 						})
 					}
 					</tbody>

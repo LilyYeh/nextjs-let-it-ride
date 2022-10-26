@@ -3,8 +3,7 @@
 	margin: auto;
 	padding: 1rem;
 	position: relative;
-	height: 90vh;
-	position: relative;
+	min-height: calc(100vh - 2rem);
 	z-index: 1;
 	&:before {
 		content: " ";
@@ -289,30 +288,75 @@ button.newGame {
 }
 
 table.privateMoney {
-	position: absolute;
-	top: calc(100vh - 11rem);
-	width: calc(100% - 2rem);
+	position: fixed;
+	bottom: 0;
+	width: 100%;
+	margin: 0 1rem;
 	font-size: 1.1rem;
-	background: white;
 	tr {
 		td {
-			padding: 1rem 0.4rem;
-			width: calc((100% - 3rem) / 3);
-			border: 1px solid rgba(16, 16, 16, 0.3);
-			text-align: center;
-			&.me {
-				background: gold;
-			}
-			/*&:before {
+			padding: 0rem 0.4rem 0.5rem 5.5rem;
+			height: 5rem;
+			font-size: 2rem;
+			font-weight: bold;
+			position: relative;
+			&:before {
 				content: "";
-				display: block;
-				background: url(/images/money.svg);
-				background-size: 100% auto;
-				width: 100%;
-				height: 100%;
-			}*/
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 5rem;
+				height: 5rem;
+			}
+			&.king:before {
+				background: url(/images/players/king.svg) no-repeat;
+				background-size: 5rem 5rem;
+			}
+			&.king-win:before {
+				background: url(/images/players/king-win.svg) no-repeat;
+				background-size: 5rem 5rem;
+			}
+			&.king-lose:before {
+				background: url(/images/players/king-lose.svg) no-repeat;
+				background-size: 5rem 5rem;
+			}
+			&.queen-flower:before {
+				background: url(/images/players/queen-flower.svg) no-repeat;
+				background-size: 5rem 5rem;
+			}
+			&.queen-flower-win:before {
+				background: url(/images/players/queen-flower-win.svg) no-repeat;
+				background-size: 5rem 5rem;
+			}
+			&.queen-flower-lose:before {
+				background: url(/images/players/queen-flower-lose.svg) no-repeat;
+				background-size: 5rem 5rem;
+			}
+			&.queen:before {
+				background: url(/images/players/queen.svg) no-repeat;
+				background-size: 5rem 5rem;
+			}
+			&.queen-win:before {
+				background: url(/images/players/queen-win.svg) no-repeat;
+				background-size: 5rem 5rem;
+			}
+			&.queen-lose:before {
+				background: url(/images/players/queen-lose.svg) no-repeat;
+				background-size: 5rem 5rem;
+			}
+			&.prince:before {
+				background: url(/images/players/prince.svg) no-repeat;
+				background-size: 5rem 5rem;
+			}
+			&.prince-win:before {
+				background: url(/images/players/prince-win.svg) no-repeat;
+				background-size: 5rem 5rem;
+			}
+			&.prince-lose:before {
+				background: url(/images/players/prince-lose.svg) no-repeat;
+				background-size: 5rem 5rem;
+			}
 		}
-
 	}
 }
 
@@ -330,12 +374,28 @@ table.privateMoney {
 			border: 1px solid;
 			text-align: center;
 			padding: 1rem;
+			font-size: 1.4rem;
 		}
 	}
 }
 
 @media screen and (min-width: 376px) {
-	.mainContent{
+	.mainContent {
+		width: auto;
+	}
+	table.privateMoney {
 		max-width: 376px;
+		left: calc(50% - 188px + 1rem);
+	}
+	#gameOver {
+		table {
+			max-width: 376px;
+			margin: 0 auto 3rem;
+			td {
+				img {
+					width: 6.5rem;
+				}
+			}
+		}
 	}
 }
