@@ -3,7 +3,6 @@ import styles from "./index.module.scss";
 const players_img = ['queen','king','queen-flower','prince'];
 
 export default function playerRanking({ranking, playerData, baseMyMoney, minPrivateMoney, maxPrivateMoney}) {
-	console.log(playerData)
 	let playerName = players_img[playerData.playerId%4];
 	if(minPrivateMoney == playerData.playerId){
 		playerName = players_img[playerData.playerId%4]+'-lose';

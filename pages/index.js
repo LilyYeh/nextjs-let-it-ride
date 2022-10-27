@@ -107,8 +107,13 @@ export default function Home() {
 		}
 		const response = await fetch(apiUrlEndpoint, getData);
 		const res = await response.json();
-		setPlayers(res);
-		socket.emit('update-players',res);
+		if(!res) {
+			displayBlock('waiting');
+		}else{
+			displayBlock('game');
+			setPlayers(res);
+			socket.emit('update-players',res);
+		}
 	}
 
 	async function onChangeInputBets(value) {
@@ -245,8 +250,14 @@ export default function Home() {
 		set3edCard({});
 		setBets(0);
 		setInputBets(0);
-		document.getElementById("game").style.display = "block";
+		displayBlock('game');
+	}
+
+	function displayBlock(value){
+		document.getElementById(styles['game']).style.display = "none";
 		document.getElementById(styles['gameOver']).style.display = "none";
+		document.getElementById(styles['waiting']).style.display = "none";
+		document.getElementById(styles[value]).style.display = "block";
 	}
 
 	useEffect(()=>{
@@ -294,11 +305,11 @@ export default function Home() {
 				maxMoneyPlayer = player.playerId;
 			}
 			totalPlayersMoney += player.money;
-			let playerName = '玩家'+player.rowNum;
+			let playerName = '';
 			if(player.socketId == socketId){
 				setMyId(player.playerId);
 				setMyMoney(player.money);
-				playerName = '我';
+				playerName = 'isMe';
 			}
 			if(player.isCurrentPlayer){
 				setCurrentPlayer(player.playerId)
@@ -344,8 +355,8 @@ export default function Home() {
 
 	useEffect(()=>{
 		if(ranking.length > 0){
-			document.getElementById("game").style.display = "none";
-			document.getElementById(styles['gameOver']).style.display = "block";
+			displayBlock('gameOver')
+			document.getElementsByClassName(styles['newGame'])[0].disabled = false;
 		}
 	},[ranking]);
 
@@ -377,65 +388,64 @@ export default function Home() {
 	return (
 		<>
 			<Head>
+				<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1.0, maximum-scale=1.0" />
 				<title>射龍門</title>
 			</Head>
-			<div id="game">
-				<div className={styles.mainContent} id="game">
+			<div className={styles.mainContent} id={styles.game}>
 				<h1 className={styles.h1}></h1>
 				<div className={styles.publicMoney}>${useRate(totalMoney)}</div>
-				<div id="myGameBoard">
-				<div className={styles.gameBoard}>
-					<div className={styles.card1}><img src={`/images/pocker/${myCards[0].imgName}`} /></div>
-					<div className={styles.card3}>{the3edCardDev}</div>
-					<div className={styles.card2}><img src={`/images/pocker/${myCards[1].imgName}`} /></div>
-				</div>
-				<div className={styles.bets+(myCards[0].number? " "+styles.active : "")}>
-					<label className={styles.title}>下注</label>
-					<div className={styles.bigOrSmallArea+(myCards[0].number==myCards[1].number? " "+styles.active : "")}>
-						<span className={styles.inputRadio} onClick={(e) => setBigOrSmall('big')}>
-							<input type="radio" name="bigOrSmall" value="big" onChange={(e) => setBigOrSmall('big')} checked={bigOrSmall=='big'} />大
-						</span>
-						<span className={styles.inputRadio} onClick={(e) => setBigOrSmall('small')}>
-							<input type="radio" name="bigOrSmall" value="small" onChange={(e) => setBigOrSmall('small')} checked={bigOrSmall=='small'} />小
-						</span>
+				<div className={styles.myGameBoard}>
+					<div className={styles.gameBoard}>
+						<div className={styles.card1}><img src={`/images/pocker/${myCards[0].imgName}`} /></div>
+						<div className={styles.card3}>{the3edCardDev}</div>
+						<div className={styles.card2}><img src={`/images/pocker/${myCards[1].imgName}`} /></div>
 					</div>
-					<div className={styles.coin+(inputBets==10? " "+styles.active : "")} onClick={() => onChangeButtonBets(10)}>$10</div>
-					<div className={styles.coin+(inputBets==30? " "+styles.active : "")} onClick={() => onChangeButtonBets(30)}>$30</div>
-					<div className={styles.coin+(inputBets==50? " "+styles.active : "")} onClick={() => onChangeButtonBets(50)}>$50</div>
-					<div className={styles.inputCoin+" "+(bets && bets==inputBets? styles.active : "")}>
-						<button className={styles.minus} onClick={() => onChangeInputBets('-')}>–</button>
-						<input type="text" value={`$${inputBets}`} onChange={onChangeInputBets}/>
-						<button className={styles.plus} onClick={() => onChangeInputBets('+')}>+</button>
+					<div className={styles.bets+(myCards[0].number? " "+styles.active : "")}>
+						<label className={styles.title}>下注</label>
+						<div className={styles.bigOrSmallArea+(myCards[0].number==myCards[1].number? " "+styles.active : "")}>
+							<span className={styles.inputRadio} onClick={(e) => setBigOrSmall('big')}>
+								<input type="radio" name="bigOrSmall" value="big" onChange={(e) => setBigOrSmall('big')} checked={bigOrSmall=='big'} />大
+							</span>
+							<span className={styles.inputRadio} onClick={(e) => setBigOrSmall('small')}>
+								<input type="radio" name="bigOrSmall" value="small" onChange={(e) => setBigOrSmall('small')} checked={bigOrSmall=='small'} />小
+							</span>
+						</div>
+						<div className={styles.coin+(inputBets==10? " "+styles.active : "")} onClick={() => onChangeButtonBets(10)}>$10</div>
+						<div className={styles.coin+(inputBets==30? " "+styles.active : "")} onClick={() => onChangeButtonBets(30)}>$30</div>
+						<div className={styles.coin+(inputBets==50? " "+styles.active : "")} onClick={() => onChangeButtonBets(50)}>$50</div>
+						<div className={styles.inputCoin+" "+(bets && bets==inputBets? styles.active : "")}>
+							<button className={styles.minus} onClick={() => onChangeInputBets('-')}>–</button>
+							<input type="text" value={`$${inputBets}`} onChange={onChangeInputBets}/>
+							<button className={styles.plus} onClick={() => onChangeInputBets('+')}>+</button>
+						</div>
+					</div>
+					<div className={styles.dealCards}>
+						{theDealCardDev}
 					</div>
 				</div>
-				<div className={styles.dealCards}>
-					{theDealCardDev}
-				</div>
-				</div>
-			</div>
 				<table className={styles.privateMoney} id="moneyTable">
-				<tbody>
-				{
-					playersMoney.map( (groups, index) => {
-						return(
-							<tr key={index}>
-								{
-									groups.map((plmny, index) => {
-										return (<PlayerMoney key={index}
-										                     playerData={plmny}
-										                     currentPlayer={currentPlayer}
-										                     baseMyMoney={baseMyMoney}
-										                     minPrivateMoney={minPrivateMoney}
-										                     maxPrivateMoney={maxPrivateMoney}
-										/>)
-									})
-								}
-							</tr>
-						)
-					})
-				}
-				</tbody>
-			</table>
+					<tbody>
+					{
+						playersMoney.map( (groups, index) => {
+							return(
+								<tr key={index}>
+									{
+										groups.map((plmny, index) => {
+											return (<PlayerMoney key={index}
+											                     playerData={plmny}
+											                     currentPlayer={currentPlayer}
+											                     baseMyMoney={baseMyMoney}
+											                     minPrivateMoney={minPrivateMoney}
+											                     maxPrivateMoney={maxPrivateMoney}
+											/>)
+										})
+									}
+								</tr>
+							)
+						})
+					}
+					</tbody>
+				</table>
 			</div>
 			<div className={styles.mainContent} id={styles['gameOver']}>
 				<h1 className={styles.h1}></h1>
@@ -464,6 +474,10 @@ export default function Home() {
 					</tbody>
 				</table>
 				<button className={'btn '+'btn-red-outline '+styles.newGame} onClick={newGame}>重新遊戲</button>
+			</div>
+			<div className={styles.mainContent} id={styles.waiting}>
+				<h1 className={styles.h1}></h1>
+				<div className={styles.waitingText}>遊戲進行中，請稍候</div>
 			</div>
 		</>
 	)

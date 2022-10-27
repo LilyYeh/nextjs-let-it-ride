@@ -13,7 +13,9 @@ export default function playerMoney({playerData, currentPlayer, baseMyMoney, min
 	}
 	return (
 		<>
-			<td className={style}>${useRate(playerData.money, baseMyMoney)}</td>
+			<td className={style + ' ' + (currentPlayer==playerData.playerId? styles.me : '') + ' ' + styles[playerData.name]}>
+				${useRate(playerData.money, baseMyMoney)}
+			</td>
 		</>
 	)
 }

@@ -1,9 +1,9 @@
 .mainContent {
-	width: 100%;
 	margin: auto;
 	padding: 1rem;
 	position: relative;
-	min-height: calc(100vh - 2rem);
+	overflow-x: hidden;
+	max-width: calc(100% - 2rem);
 	z-index: 1;
 	&:before {
 		content: " ";
@@ -55,12 +55,22 @@
 	}
 }
 
+#game {
+	display: none;
+}
+
 .publicMoney {
 	margin: auto;
 	margin-bottom: 0.5rem;
 	width: max-content;
 	font-size: 3rem;
 	font-weight: bold;
+}
+
+.myGameBoard {
+	max-width: 376px;
+	min-height: calc(100vh - 11rem);
+	margin: auto;
 }
 
 button.deal, button.shoot, button.pass, button.keepGoing, button.gameOver, button.newGame {
@@ -156,7 +166,7 @@ button.newGame {
 
 .gameBoard {
 	display: flex;
-	width: max-content;
+	//width: max-content;
 	margin: 0 auto 0.5rem;
 	.card1, .card2, .card3 {
 		display:inline-flex;
@@ -184,7 +194,7 @@ button.newGame {
 }
 
 .bets {
-	width: max-content;
+	//width: max-content;
 	margin: 0 auto 0.5rem;
 	background: white;
 	border: 1px solid rgba(16, 16, 16, 0.3);
@@ -234,7 +244,7 @@ button.newGame {
 		line-height: 3.5rem;
 		border: 2px solid #ffc107;
 		border-radius: 50%;
-		margin: 0 0.3rem;
+		margin: 0 0.1rem;
 		cursor: pointer;
 		background: white;
 		color: #ffc107;
@@ -255,7 +265,7 @@ button.newGame {
 		border-radius: 24px;
 		margin: 0 0.3rem;
 		input {
-			width: 5rem;
+			width: 3.9rem;
 			font-size: 1.5rem;
 			text-align: center;
 			border: 0px;
@@ -290,16 +300,26 @@ button.newGame {
 table.privateMoney {
 	position: fixed;
 	bottom: 0;
-	width: 100%;
-	margin: 0 1rem;
+	width: calc(100% - 2rem);
 	font-size: 1.1rem;
 	tr {
 		td {
-			padding: 0rem 0.4rem 0.5rem 5.5rem;
-			height: 5rem;
+			padding: 1rem 0.4rem 0rem 5.5rem;
+			width: 50%;
+			height: 4.5rem;
 			font-size: 2rem;
 			font-weight: bold;
 			position: relative;
+			color: grey;
+			&.isMe {
+				color: #000;
+			}
+			.playerName {
+				position: absolute;
+				top: 2rem;
+				left: -0.5rem;
+				font-size: 1rem;
+			}
 			&:before {
 				content: "";
 				position: absolute;
@@ -356,12 +376,20 @@ table.privateMoney {
 				background: url(/images/players/prince-lose.svg) no-repeat;
 				background-size: 5rem 5rem;
 			}
+			&.me:after {
+				content: "-";
+				position: relative;
+				top: 1.2rem;
+				left: -2.5rem;
+				color: #000;
+			}
 		}
 	}
 }
 
 #gameOver {
 	display: none;
+	min-height: 100vh;
 	table {
 		margin-bottom: 3rem;
 		width: 100%;
@@ -379,10 +407,17 @@ table.privateMoney {
 	}
 }
 
-@media screen and (min-width: 376px) {
-	.mainContent {
-		width: auto;
+#waiting {
+	display: none;
+	min-height: 100vh;
+	text-align: center;
+	.waitingText {
+		padding: 1rem;
+		font-size: 1.4rem;
 	}
+}
+
+@media screen and (min-width: 376px) {
 	table.privateMoney {
 		max-width: 376px;
 		left: calc(50% - 188px + 1rem);
