@@ -14,7 +14,7 @@
 		height: 100%;
 		opacity: 0.05;
 		z-index: -1;
-		background: url(/images/background.jpeg);
+		background: url(/images/background.jpg);
 		background-size: contain;
 	}
 }
@@ -304,21 +304,14 @@ table.privateMoney {
 	font-size: 1.1rem;
 	tr {
 		td {
-			padding: 1rem 0.4rem 0rem 5.5rem;
+			padding: 1rem 0.4rem 0rem 4rem;
 			width: 50%;
 			height: 4.5rem;
 			font-size: 2rem;
 			font-weight: bold;
 			position: relative;
-			color: grey;
 			&.isMe {
-				color: #000;
-			}
-			.playerName {
-				position: absolute;
-				top: 2rem;
-				left: -0.5rem;
-				font-size: 1rem;
+				color: #dc3545;
 			}
 			&:before {
 				content: "";
@@ -376,12 +369,20 @@ table.privateMoney {
 				background: url(/images/players/prince-lose.svg) no-repeat;
 				background-size: 5rem 5rem;
 			}
-			&.me:after {
-				content: "-";
+			.myMoney{
 				position: relative;
-				top: 1.2rem;
-				left: -2.5rem;
-				color: #000;
+				display: flex;
+				justify-content: center;
+			}
+			&.me{
+				.myMoney{
+					&:after {
+						content: "-";
+						position: absolute;
+						top: 1.2rem;
+						color: #dc3545;
+					}
+				}
 			}
 		}
 	}

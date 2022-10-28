@@ -1,4 +1,4 @@
-import { login, countPlayers } from "../../lib/db_players";
+import { login } from "../../lib/db_players";
 
 export default async function handler(req, res) {
 	try {

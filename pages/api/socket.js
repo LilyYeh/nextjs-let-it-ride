@@ -47,6 +47,10 @@ export default function handler(req, res) {
 		socket.on('keep-going',  playersData => {
 			socket.broadcast.emit('keep-going', playersData);
 		});
+
+		socket.on('clicked-getCard',  getCardFlag => {
+			socket.broadcast.emit('clicked-getCard', getCardFlag);
+		});
 	});
 	res.end();
 }

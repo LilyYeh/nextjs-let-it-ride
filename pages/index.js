@@ -1,11 +1,11 @@
 import Head from 'next/head';
 import styles from './index.module.scss';
 import { useEffect, useState } from 'react';
-import io from "socket.io-client";
-let socket;
 import useRate from "./useRate";
 import PlayerMoney from './playerMoney';
 import PlayerRanking from './playerRanking';
+import io from "socket.io-client";
+let socket;
 
 export default function Home() {
 	const [ socketId, setSocketId ] = useState('');
@@ -34,6 +34,7 @@ export default function Home() {
 	const [ isAnyPlayerCantPlay, setIsAnyPlayerCantPlay ] = useState(false);
 
 	const [ ranking, setRanking ] = useState([]);
+	const [ getCardFlag, setClickedGetCard ] = useState(false);
 
 	async function dealCards(e){
 		e.target.disabled = true;
@@ -52,6 +53,8 @@ export default function Home() {
 	}
 
 	async function getCard(e){
+		setClickedGetCard(true);
+		socket.emit('clicked-getCard',true);
 		e.target.disabled = true;
 		const apiUrlEndpoint = `/api/getCard`;
 		const getData = {
@@ -192,6 +195,10 @@ export default function Home() {
 		socket.on('keep-going', playersData => {
 			setDefault(playersData);
 		});
+
+		socket.on('clicked-getCard', getCardFlag => {
+			setClickedGetCard(getCardFlag);
+		});
 	}
 
 	async function gameOver(e) {
@@ -245,11 +252,15 @@ export default function Home() {
 	}
 
 	function setDefault(playersData) {
+		setClickedGetCard(false);
+		socket.emit('clicked-getCard',false);
 		setPlayers(playersData);
 		setMyCard(defaultMyCards);
 		set3edCard({});
 		setBets(0);
 		setInputBets(0);
+		setMinPrivateMoney(0);
+		setMaxPrivateMoney(0);
 		displayBlock('game');
 	}
 
@@ -435,8 +446,7 @@ export default function Home() {
 											                     playerData={plmny}
 											                     currentPlayer={currentPlayer}
 											                     baseMyMoney={baseMyMoney}
-											                     minPrivateMoney={minPrivateMoney}
-											                     maxPrivateMoney={maxPrivateMoney}
+											                     getCardFlag={getCardFlag}
 											/>)
 										})
 									}
