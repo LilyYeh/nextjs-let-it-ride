@@ -10,7 +10,6 @@ export default function playerMoney({playerData, currentPlayer, baseMyMoney, get
 
 
 	useEffect(() => {
-		console.log(getCardFlag);
 		if(getCardFlag){
 			if (playerData.money > money) {
 				setStyle(styles[players_img[playerData.playerId % 4] + '-win']);
@@ -24,7 +23,7 @@ export default function playerMoney({playerData, currentPlayer, baseMyMoney, get
 		}
 
 		setMoney(playerData.money);
-	},[playerData.money,currentPlayer]);
+	},[playerData.money,getCardFlag]);
 
 	return (
 		<>

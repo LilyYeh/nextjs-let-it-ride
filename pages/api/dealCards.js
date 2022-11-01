@@ -1,4 +1,5 @@
 import { foldCards, countCards, getCards, shuffle } from "../../lib/db_cards";
+import {getPlayers, setKeepGoing} from "../../lib/db_players";
 
 /*
  * return 一副撲克牌
@@ -22,8 +23,23 @@ export default async function handler(req, res) {
 		// ok 拿取手牌
 		const cards = await getCards(socketId,2);
 
+		const baseMoney = JSON.parse(req.body).baseMoney;
+		const baseMyMoney = JSON.parse(req.body).baseMyMoney;
+		let players = JSON.parse(req.body).players;
+		// 計算檯面金額
+		let baseAllMoney = players.length * baseMyMoney;
+		let totalPlayersMoney = 0;
+		players.forEach((player,index)=>{
+			totalPlayersMoney += player.money;
+		});
+		// 檯面沒錢了
+		if(baseAllMoney - totalPlayersMoney <= 0){
+			await setKeepGoing(baseMoney);
+			players = await getPlayers();
+		}
+
 		//api 一定要放 res.status(200).json(myCards); 才能印出資料
-		res.status(200).json({ status:'ok', data:sort(cards) });
+		res.status(200).json({ status:'ok', data:{ cards:sort(cards), players:players } });
 	} catch (error) {
 		res.status(500).json({ error:error.message });
 	}

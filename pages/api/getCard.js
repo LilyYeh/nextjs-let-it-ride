@@ -1,5 +1,5 @@
 import { countCards, getCards, shuffle } from "../../lib/db_cards";
-import { goaling } from "../../lib/db_players";
+import {goaling, setNextPlayer} from "../../lib/db_players";
 
 /*
  * return 一張撲克牌
@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 		const card = await getCards(socketId,1);
 		const my3edCards = card[0];
 
-		// 射龍門(補牌)
+		// 射龍門
 		const myCards = JSON.parse(req.body).myCards;
 		let bets = JSON.parse(req.body).bets;
 		let bigOrSmall = JSON.parse(req.body).bigOrSmall;
@@ -40,9 +40,9 @@ export default async function handler(req, res) {
 			}
 		}
 
-		const baseMoney = JSON.parse(req.body).baseMoney;
-		const baseMyMoney = JSON.parse(req.body).baseMyMoney;
-		const players = await goaling(socketId, bets, baseMoney, baseMyMoney);
+		await goaling(socketId, bets);
+
+		const players = await setNextPlayer(socketId);
 
 		res.status(200).json({my3edCards: my3edCards, players: players});
 	} catch (error) {

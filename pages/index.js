@@ -35,26 +35,38 @@ export default function Home() {
 
 	const [ ranking, setRanking ] = useState([]);
 	const [ getCardFlag, setClickedGetCard ] = useState(false);
+	const [ isNavOpen, setNavOpen ] = useState(false);
 
-	async function dealCards(e){
+	async function dealCards(e) {
+		// 人物表情 Default
+		setClickedGetCard(false);
+		socket.emit('clicked-getCard',false);
+
 		e.target.disabled = true;
 		const apiUrlEndpoint = `/api/dealCards`;
 		const getData = {
 			method: "POST",
 			header: { "Content-Type": "application/json" },
 			body: JSON.stringify({
-				socketId: socketId
+				socketId: socketId,
+				baseMyMoney: baseMyMoney,
+				baseMoney: baseMoney,
+				players: players
 			})
 		}
 		const response = await fetch(apiUrlEndpoint, getData);
 		const res = await response.json();
-		setMyCard(res.data);
+		setMyCard(res.data.cards);
 		set3edCard({});
+		setPlayers(res.data.players);
+		socket.emit('update-players', res.data.players);
 	}
 
-	async function getCard(e){
+	async function getCard(e) {
+		// 人物表情變換
 		setClickedGetCard(true);
 		socket.emit('clicked-getCard',true);
+
 		e.target.disabled = true;
 		const apiUrlEndpoint = `/api/getCard`;
 		const getData = {
@@ -64,8 +76,6 @@ export default function Home() {
 				socketId: socketId,
 				myCards: myCards,
 				bets: bets,
-				baseMyMoney: baseMyMoney,
-				baseMoney: baseMoney,
 				bigOrSmall: bigOrSmall
 			})
 		}
@@ -73,10 +83,10 @@ export default function Home() {
 		const res = await response.json();
 		set3edCard(res.my3edCards);
 		setPlayers(res.players);
-		socket.emit('update-players',res.players);
+		socket.emit('set-next-player', res.players);
 	}
 
-	async function nextPlayer(e){
+	async function nextPlayer(e) {
 		e.target.disabled = true;
 		const apiUrlEndpoint = `/api/setNextPlayer`;
 		const getData = {
@@ -89,15 +99,10 @@ export default function Home() {
 		const response = await fetch(apiUrlEndpoint, getData);
 		const res = await response.json();
 		socket.emit('set-next-player', res);
-		setCurrentPlayer(res);
-		setMyCard(defaultMyCards);
-		set3edCard({});
-		setBets(0);
-		setInputBets(0);
-		setButtonBets(0);
+		setDefault(res);
 	}
 
-	async function playerLogin(){
+	async function playerLogin() {
 		const apiUrlEndpoint = `/api/playerLogin`;
 		const getData = {
 			method: "POST",
@@ -168,7 +173,7 @@ export default function Home() {
 		return value;
 	}
 
-	async function socketInitializer(){
+	async function socketInitializer() {
 		await fetch('/api/socket');
 		socket = io();
 
@@ -180,8 +185,8 @@ export default function Home() {
 			setPlayers(playersData);
 		});
 
-		socket.on('set-next-player', nextPlayer => {
-			setCurrentPlayer(nextPlayer);
+		socket.on('set-next-player', playersData => {
+			setDefault(playersData);
 		});
 
 		socket.on('game-over', rankingData => {
@@ -192,9 +197,9 @@ export default function Home() {
 			setDefault(playersData);
 		});
 
-		socket.on('keep-going', playersData => {
+		/*socket.on('keep-going', playersData => {
 			setDefault(playersData);
-		});
+		});*/
 
 		socket.on('clicked-getCard', getCardFlag => {
 			setClickedGetCard(getCardFlag);
@@ -202,7 +207,6 @@ export default function Home() {
 	}
 
 	async function gameOver(e) {
-		e.target.disabled = true;
 		const apiUrlEndpoint = `/api/gameOver`;
 		const getData = {
 			method: "POST",
@@ -218,7 +222,10 @@ export default function Home() {
 	}
 
 	async function newGame(e) {
-		e.target.disabled = true;
+		// 人物表情 Default
+		setClickedGetCard(false);
+		socket.emit('clicked-getCard',false);
+
 		const apiUrlEndpoint = `/api/newGame`;
 		const getData = {
 			method: "POST",
@@ -235,36 +242,20 @@ export default function Home() {
 		socket.emit('new-game',res);
 	}
 
-	async function keepGoing(e) {
-		e.target.disabled = true;
-		const apiUrlEndpoint = `/api/keepGoing`;
-		const getData = {
-			method: "POST",
-			header: { "Content-Type": "application/json" },
-			body: JSON.stringify({
-				baseMoney: baseMoney,
-			})
-		}
-		const response = await fetch(apiUrlEndpoint, getData);
-		const res = await response.json();
-		setDefault(res)
-		socket.emit('keep-going',res);
-	}
-
 	function setDefault(playersData) {
-		setClickedGetCard(false);
-		socket.emit('clicked-getCard',false);
+		//setClickedGetCard(false);
+		//socket.emit('clicked-getCard',false);
 		setPlayers(playersData);
 		setMyCard(defaultMyCards);
 		set3edCard({});
 		setBets(0);
 		setInputBets(0);
-		setMinPrivateMoney(0);
-		setMaxPrivateMoney(0);
+		setButtonBets(0);
+		setNavOpen(false);
 		displayBlock('game');
 	}
 
-	function displayBlock(value){
+	function displayBlock(value) {
 		document.getElementById(styles['game']).style.display = "none";
 		document.getElementById(styles['gameOver']).style.display = "none";
 		document.getElementById(styles['waiting']).style.display = "none";
@@ -337,6 +328,9 @@ export default function Home() {
 		if(maxMoney > minMoney) {
 			setMinPrivateMoney(minMoneyPlayer);
 			setMaxPrivateMoney(maxMoneyPlayer);
+		}else{
+			setMinPrivateMoney(0);
+			setMaxPrivateMoney(0);
 		}
 		setPlayersMoney(playersMoney);
 		setTotalMoney(baseAllMoney - totalPlayersMoney);
@@ -382,18 +376,8 @@ export default function Home() {
 	let theDealCardDev = <>
 		<button className={'btn '+'btn-red-outline '+styles.deal} onClick={dealCards} disabled={!isMyTurn || myCards[0].number}>重新發牌</button>
 	</>
-	if(totalMoney <= 0) {
-		theDealCardDev = <>
-			<button className={'btn '+'btn-black-outline '+styles.gameOver+' mg-right-1rem'} onClick={gameOver}>遊戲結束</button>
-			<button className={'btn '+'btn-red-outline '+styles.keepGoing} onClick={keepGoing}>遊戲繼續</button>
-		</>;
-		if(isAnyPlayerCantPlay) {
-			theDealCardDev = <button className={'btn '+'btn-black-outline '+styles.gameOver} onClick={gameOver}>遊戲結束</button>;
-		}
-	}else if(!isAnyPlayerCanPlay){
-		theDealCardDev = <button className={'btn '+'btn-black-outline '+styles.gameOver} onClick={gameOver}>遊戲結束</button>;
-	}else if(isMyTurn && (myMoney < 20 || my3edCards.imgName)){
-		theDealCardDev = <button className={'btn '+'btn-black-outline '+styles.pass} onClick={nextPlayer}>完成</button>;
+	if(!isAnyPlayerCanPlay){
+		theDealCardDev = <button className={'btn '+'btn-black-outline '+styles.endGame} onClick={gameOver}>遊戲結束</button>;
 	}
 
 	return (
@@ -434,28 +418,35 @@ export default function Home() {
 						{theDealCardDev}
 					</div>
 				</div>
-				<table className={styles.privateMoney} id="moneyTable">
-					<tbody>
-					{
-						playersMoney.map( (groups, index) => {
-							return(
-								<tr key={index}>
-									{
-										groups.map((plmny, index) => {
-											return (<PlayerMoney key={index}
-											                     playerData={plmny}
-											                     currentPlayer={currentPlayer}
-											                     baseMyMoney={baseMyMoney}
-											                     getCardFlag={getCardFlag}
-											/>)
-										})
-									}
-								</tr>
-							)
-						})
-					}
-					</tbody>
-				</table>
+				<div id={styles.menu}>
+					<ul className={styles.nav + ' ' + (isNavOpen? styles.active:'')}>
+						<li><button className={'btn '+'btn-black-outline '+styles.endGame} onClick={gameOver}>遊戲結束</button></li>
+						<li><button className={'btn '+'btn-red-outline '+styles.newGame} onClick={newGame}>重新遊戲</button></li>
+					</ul>
+					<button className={styles.openNav} onClick={()=>setNavOpen(isNavOpen? false:true)}>{isNavOpen? '✕':'⚛'}︎</button>
+					<table className={styles.privateMoney}>
+						<tbody>
+						{
+							playersMoney.map( (groups, index) => {
+								return(
+									<tr key={index}>
+										{
+											groups.map((plmny, index) => {
+												return (<PlayerMoney key={index}
+												                     playerData={plmny}
+												                     currentPlayer={currentPlayer}
+												                     baseMyMoney={baseMyMoney}
+												                     getCardFlag={getCardFlag}
+												/>)
+											})
+										}
+									</tr>
+								)
+							})
+						}
+						</tbody>
+					</table>
+				</div>
 			</div>
 			<div className={styles.mainContent} id={styles['gameOver']}>
 				<h1 className={styles.h1}></h1>

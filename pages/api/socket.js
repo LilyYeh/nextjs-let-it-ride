@@ -32,8 +32,8 @@ export default function handler(req, res) {
 			getply();
 		});
 
-		socket.on('set-next-player', nextPlayer => {
-			socket.broadcast.emit('set-next-player', nextPlayer);
+		socket.on('set-next-player', playersData => {
+			socket.broadcast.emit('set-next-player', playersData);
 		});
 
 		socket.on('game-over', rankingData => {
@@ -42,10 +42,6 @@ export default function handler(req, res) {
 
 		socket.on('new-game',  playersData => {
 			socket.broadcast.emit('new-game', playersData);
-		});
-
-		socket.on('keep-going',  playersData => {
-			socket.broadcast.emit('keep-going', playersData);
 		});
 
 		socket.on('clicked-getCard',  getCardFlag => {
