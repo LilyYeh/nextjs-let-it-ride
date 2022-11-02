@@ -372,7 +372,7 @@ export default function Home() {
 	</>
 	if(!isAnyPlayerCanPlay){
 		theDealCardDev = <button className={'btn '+'btn-black-outline '+styles.endGame} onClick={gameOver}>遊戲結束</button>;
-	}else if(myMoney<=0 && isMyTurn){
+	}else if(myMoney<20 && isMyTurn){
 		theDealCardDev = <button className={'btn '+'btn-black-outline '+styles.pass} onClick={nextPlayer} disabled={false}>pass</button>;
 	}
 
@@ -419,7 +419,7 @@ export default function Home() {
 						<li><button className={'btn '+'btn-black-outline '+styles.endGame} onClick={gameOver}>遊戲結束</button></li>
 						<li><button className={'btn '+'btn-red-outline '+styles.newGame} onClick={newGame}>重新遊戲</button></li>
 					</ul>
-					<div className={styles.openNav} onClick={()=>setNavOpen(isNavOpen? false:true)}>{isNavOpen? '✕':'⚛'}︎</div>
+					<div className={styles.openNav} onClick={()=>setNavOpen(isNavOpen? false:true)}>{isNavOpen? '✕':<img src={"/images/atom.png"} />}︎</div>
 					<table className={styles.privateMoney}>
 						<tbody>
 						{

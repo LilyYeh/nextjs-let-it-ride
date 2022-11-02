@@ -1,14 +1,14 @@
 import styles from "./index.module.scss";
 
-const players_img = ['queen','king','queen-flower','prince'];
+const players_img = ['queen','king','prince2','queen-flower','king2','prince'];
 
 export default function playerRanking({ranking, playerData, baseMyMoney, minPrivateMoney, maxPrivateMoney}) {
-	let playerName = players_img[playerData.playerId%4];
+	let playerName = players_img[playerData.playerId%6];
 	if(minPrivateMoney == playerData.playerId){
-		playerName = players_img[playerData.playerId%4]+'-lose';
+		playerName = players_img[playerData.playerId%6]+'-lose';
 	}
 	if(maxPrivateMoney == playerData.playerId){
-		playerName = players_img[playerData.playerId%4]+'-win';
+		playerName = players_img[playerData.playerId%6]+'-win';
 	}
 
 	let totalMyMoney = playerData.money - baseMyMoney;
