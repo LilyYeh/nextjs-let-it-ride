@@ -365,7 +365,8 @@ button.newGame {
 				}
 				&.king-win:before {
 					background: url(/images/players/king-win.svg) no-repeat;
-					background-size: 5rem auto;
+					background-size: 5.3rem auto;
+					width: 5.3rem;
 				}
 				&.king-lose:before {
 					background: url(/images/players/king-lose.svg) no-repeat;
@@ -378,13 +379,14 @@ button.newGame {
 				}
 				&.king2-win:before {
 					background: url(/images/players/king2-win.svg) no-repeat;
-					background-size: 5.3rem auto;
-					width: 5.3rem;
+					background-size: 5.5rem auto;
+					top: 0.2rem;
+					width: 5.5rem;
 				}
 				&.king2-lose:before {
 					background: url(/images/players/king2-lose.svg) no-repeat;
-					background-size: 5rem auto;
-					top: 0.5rem;
+					background-size: 5.5rem auto;
+					width: 5.5rem;
 				}
 				&.queen-flower:before {
 					background: url(/images/players/queen-flower.svg) no-repeat;
@@ -435,12 +437,14 @@ button.newGame {
 				}
 				&.prince2-win:before {
 					background: url(/images/players/prince2-win.svg) no-repeat;
-					background-size: 5rem auto;
-					top: 0.5rem;
+					background-size: 5.5rem auto;
+					top: 0.3rem;
+					width: 5.5rem;
 				}
 				&.prince2-lose:before {
 					background: url(/images/players/prince2-lose.svg) no-repeat;
 					background-size: 4.3rem auto;
+					top: 0.3rem;
 					left: 0.3rem;
 				}
 
