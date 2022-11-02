@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import styles from './index.module.scss';
+import pocker from './pocker.module.scss';
 import { useEffect, useState } from 'react';
 import useRate from "./useRate";
 import PlayerMoney from './playerMoney';
@@ -18,7 +19,7 @@ export default function Home() {
 	const [ maxPrivateMoney, setMaxPrivateMoney ] = useState(0);
 
 	//myCards[0]、myCards[1] 龍柱
-	const defaultMyCards = [{"number":0,"type":"","imgName":"back.jpg"},{"number":0,"type":"","imgName":"back.jpg"}]
+	const defaultMyCards = [{"number":0,"type":"","imgName":"back"},{"number":0,"type":"","imgName":"back"}]
 	const [ myCards, setMyCard ] = useState(defaultMyCards);
 	const [ my3edCards, set3edCard ] = useState({});
 
@@ -197,10 +198,6 @@ export default function Home() {
 			setDefault(playersData);
 		});
 
-		/*socket.on('keep-going', playersData => {
-			setDefault(playersData);
-		});*/
-
 		socket.on('clicked-getCard', getCardFlag => {
 			setClickedGetCard(getCardFlag);
 		});
@@ -243,8 +240,6 @@ export default function Home() {
 	}
 
 	function setDefault(playersData) {
-		//setClickedGetCard(false);
-		//socket.emit('clicked-getCard',false);
 		setPlayers(playersData);
 		setMyCard(defaultMyCards);
 		set3edCard({});
@@ -270,7 +265,6 @@ export default function Home() {
 		async function f(){
 			if(socketId!==''){
 				await playerLogin();
-				//await getPlayers();
 			}
 		}
 		f();
@@ -370,7 +364,7 @@ export default function Home() {
 		<button className={'btn '+'btn-black-outline '+styles.pass} onClick={nextPlayer} disabled={!isMyTurn || !myCards[0].number || totalMoney <=0}>pass</button>
 	</>;
 	if(my3edCards.imgName) {
-		the3edCardDev = <img src={`/images/pocker/${my3edCards.imgName}`} />;
+		the3edCardDev = '';
 	}
 
 	let theDealCardDev = <>
@@ -378,6 +372,8 @@ export default function Home() {
 	</>
 	if(!isAnyPlayerCanPlay){
 		theDealCardDev = <button className={'btn '+'btn-black-outline '+styles.endGame} onClick={gameOver}>遊戲結束</button>;
+	}else if(myMoney<=0 && isMyTurn){
+		theDealCardDev = <button className={'btn '+'btn-black-outline '+styles.pass} onClick={nextPlayer} disabled={false}>pass</button>;
 	}
 
 	return (
@@ -391,9 +387,9 @@ export default function Home() {
 				<div className={styles.publicMoney}>${useRate(totalMoney)}</div>
 				<div className={styles.myGameBoard}>
 					<div className={styles.gameBoard}>
-						<div className={styles.card1}><img src={`/images/pocker/${myCards[0].imgName}`} /></div>
-						<div className={styles.card3}>{the3edCardDev}</div>
-						<div className={styles.card2}><img src={`/images/pocker/${myCards[1].imgName}`} /></div>
+						<div className={`${styles.card1} ${pocker['bg-'+myCards[0].imgName]}`}></div>
+						<div className={`${styles.card3} ${my3edCards.imgName ? pocker['bg-'+my3edCards.imgName] : ''}`}>{the3edCardDev}</div>
+						<div className={`${styles.card1} ${pocker['bg-'+myCards[1].imgName]}`}></div>
 					</div>
 					<div className={styles.bets+(myCards[0].number? " "+styles.active : "")}>
 						<label className={styles.title}>下注</label>
@@ -423,7 +419,7 @@ export default function Home() {
 						<li><button className={'btn '+'btn-black-outline '+styles.endGame} onClick={gameOver}>遊戲結束</button></li>
 						<li><button className={'btn '+'btn-red-outline '+styles.newGame} onClick={newGame}>重新遊戲</button></li>
 					</ul>
-					<button className={styles.openNav} onClick={()=>setNavOpen(isNavOpen? false:true)}>{isNavOpen? '✕':'⚛'}︎</button>
+					<div className={styles.openNav} onClick={()=>setNavOpen(isNavOpen? false:true)}>{isNavOpen? '✕':'⚛'}︎</div>
 					<table className={styles.privateMoney}>
 						<tbody>
 						{
